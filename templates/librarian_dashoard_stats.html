@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% set current_section = 'librarian_dashboard_stats' %}
+
+{% block title %} Librarian's Dashboard - Stats {% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <a class="navbar-brand" href="{{ url_for('librarian_dashboard') }}">Librarian Dashboard</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('librarian_dashboard') }}">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <h3>Stats</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Total Borrows Over Time</h4>
+            <canvas id="borrows_chart"></canvas>
+            <script>
+                var ctx = document.getElementById('borrows_chart').getContext('2d');
+                var chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: {{ labels|tojson }},
+                        datasets: [{
+                            label: 'Total Borrows',
+                            data: {{ total_borrows|tojson }},
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            </script>
+        </div>
+        <div class="col-md-6">
+            <h4>Book Ratings</h4>
+            <canvas id="ratings_chart"></canvas>
+            <script>
+                var ctx = document.getElementById('ratings_chart').getContext('2d');
+                var chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ book_ratings|map(attribute='title')|tojson }},
+                        datasets: [{
+                            label: 'Rating',
+                            data: {{ book_ratings|map(attribute='rating')|tojson }},
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true,
+                                    max: 5
+                                }
+                            }]
+                        }
+                    }
+                });
+            </script>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Section Reads</h4>
+            <canvas id="section_reads_chart"></canvas>
+            <script>
+                var ctx = document.getElementById('section_reads_chart').getContext('2d');
+                var chart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: {{ sections|map(attribute='name')|tojson }},
+                        datasets: [{
+                            label: 'Reads',
+                            data: {{ section_reads|tojson }},
+                            backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)']
+                        }]
+                    }
+                });
+            </script>
+        </div>
+        <div class="col-md-6">
+            <h4>Top Readers</h4>
+            <canvas id="top_readers_chart"></canvas>
+            <script>
+                var ctx = document.getElementById('top_readers_chart').getContext('2d');
+                var chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ top_readers|map(attribute='name')|tojson }},
+                        datasets: [{
+                            label: 'Borrows',
+                            data: {{ top_readers|map(attribute='total_borrows')|tojson }},
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            </script>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

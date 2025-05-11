@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% set current_section = 'section_details' %}
+
+{% block title %} Section Details {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{{ url_for('librarian_dashboard') }}">Librarian Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('librarian_dashboard_stats') }}">Stats</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            </li>
+          </ul>
+        </div>
+       </nav>
+
+    <h2>Section Details</h2>
+    <h3>{{ section.title }}</h3>
+    
+    <div class="row">
+        <div class="col-md-12">
+            {% if section.books %}
+                {% for book in section.books %}
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ book.title }}</h5>
+                            <p class="card-text">Author: {{ book.author }}</p>
+                            <p class="card-text">Issued To: {{ book.issued_to if book.issued_to else 'Not Issued' }}</p>
+                            <p class="card-text">Content: {{ book.content }}</p>
+                            <p class="card-text">Days Requested: {{ book.days_requested }}</p>
+                            <a href="{{ url_for('edit_book', book_title=book.title) }}" class="btn btn-primary">Edit</a>
+                            <a href="{{ url_for('delete_book', book_title=book.title) }}" class="btn btn-danger">Delete</a>
+                        </div>
+                    </div>
+                {% endfor %}
+                
+            {% else %}
+                <p>No books in this section</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="text-center mt-5">
+        {% if current_user.is_librarian %}
+            <a href="{{ url_for('add_book_to_section', section_title=section.title) }}" class="btn btn-primary">Add Book</a>
+        {% endif %}
+    </div>
+   </div>
+</div>
+{% endblock %}

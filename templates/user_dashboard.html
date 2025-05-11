@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}
+User Dashboard
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+      <div class="col-md-12">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+       
+        <a class="navbar-brand" href="{{ url_for('user_dashboard') }}">User Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('my_books') }}">MyBooks</a>
+            </li>
+           
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('user_dashboard_stats') }}">Stats</a>
+            </li>
+          </ul>
+        </div>
+        <div class="col-md-4 text-right">
+          <form id="search_form" action="{{ url_for('search') }}" method="GET">
+  <div class="input-group">
+    <input type="text" class="form-control" id="search_query" name="search_query" placeholder="Search sections...">
+    <div class="input-group-append">
+      <select class="custom-select" id="search_attribute" name="search_attribute">
+        <option value="title">Title</option>
+        <option value="author">Author</option>
+        <option value="section">Section</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+  </div>
+</form>
+        </div>
+      </nav>
+      <div class="row" id="books-container">
+        {% for book in books %}
+  <div class="card" style="width: 18rem;">
+    <div class="card-body">
+      <h5 class="card-subtitle mb-2 text-muted">Title: {{ book.title }}</h5>
+      <h6 class="card-subtitle mb-2 text-muted">Author: {{ book.author }}</h6>
+      <h7 class="card-subtitle mb-2 text-muted">Section: {{ book.section.title }}</h7>
+      {% if book.rating==0 %}
+      <p class="card-subtitle mb-2 text-muted">Book rating: No rating yet</p>
+      {% else %}
+      <p class="card-subtitle m	b-2 text-muted">Book rating: {{ book.rating }}</p>
+      {% endif %}
+      <p class="card-subtitle mb-2 text-muted">Number of reads: {{ book.number_of_reads }}</p>
+
+      {% if book.request_status == 'pending' %}
+        {% if book.requested_by == current_user.id %}
+        <p class="card-text">Request status: Pending</p>
+        {% else %}	
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#requestModal{{ book.id }}">
+          Request
+        </button>
+        {% endif %}
+      {% elif book.request_status == 'accepted' %}
+        {% if book.issued_to == current_user.id %}
+        <p class="card-text">Request status: Accepted</p>
+        {% else %}
+        <p class="card-text">Book not available</p>
+        {% endif %}
+      {% elif book.request_status == 'rejected' %}
+        {% if book.requested_by == current_user.id %}
+        <p class="card-text">Request status: Rejected</p>
+        {% else %}
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#requestModal{{ book.id }}">
+          Request
+        </button>
+        {% endif %}
+      {% else %}
+        {% if accepted >=5 %}
+          <p class="card-text">Maximum Request Limit Reached</p>
+        {% else %}
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#requestModal{{ book.id }}">
+          Request
+        </button>
+        {% endif %}
+       
+      {% endif %}
+      
+    </div>
+</div>
+{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal dialog for request form -->
+{% for book in books %}
+<div class="modal fade" id="requestModal{{ book.id }}" tabindex="-1" role="dialog" aria-labelledby="requestModal{{ book.id }}" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="requestModal{{ book.id }}">Request Book</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="{{ url_for('request_book', book_id=book.id) }}">
+          <input type="hidden" name="book_id" value="{{ book.id }}">
+          <div class="form-group">
+            <label for="days_requested">Number of days requested</label>
+            <input type="number" class="form-control" id="days_requested" name="days_requested" min="1" max="7" required>
+            <div class="invalid-feedback" id="requestLimitError{{ book.id }}">Maximum limit for requests has been reached.</div>
+            <div class="invalid-feedback" id="days_requestedError{{ book.id }}">Please enter correct values.</div>
+          </div>
+          <button type="submit" class="btn btn-primary">Request</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+<script>
+  // Add event listener to each form
+  document.querySelectorAll('#requestForm{{ book.id }}').forEach(form => {
+    form.addEventListener('submit', e => {
+      // Get the rating input and error message elements
+      const ratingInput = e.target.querySelector('#days_requested');
+      const ratingError = e.target.querySelector('#days_requestedError{{ book.id }}');
+      const requestLimitError = e.target.querySelector('#requestLimitError{{ book.id }}');
+
+      const userRequests = Request.query.filter_by(user_id=current_user.id, status='accepted').all();
+      console.log('Number of user requests:', userRequests.length);
+      if (userRequests.length >= 5) {
+        // Display error message and prevent form submission
+        requestLimitError.classList.remove('d-none');
+        e.preventDefault();
+    
+      } else {
+        // Clear error message and allow form submission
+        requestLimitError.classList.add('d-none');
+      }
+      // Check if the input value is an integer and between 1-10
+      console.log('Hello');
+      if (isNaN(ratingInput.value) || ratingInput.value < 1 || ratingInput.value > 10) {
+        // Display error message and prevent form submission
+        ratingError.classList.remove('d-none');
+        ratingInput.classList.add('is-invalid');
+        e.preventDefault();
+      } else {
+        // Clear error message and allow form submission
+        ratingError.classList.add('d-none');
+        ratingInput.classList.remove('is-invalid');
+      }
+
+      // Check if the user has already made 5 requests with the status 'accepted'
+      
+    });
+  });
+</script>
+

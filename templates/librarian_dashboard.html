@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% set current_section = 'librarian_dashboard' %}
+
+{% block title %} Librarian's Dashboard {% endblock %}
+
+{% block content %}
+    
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{{ url_for('librarian_dashboard') }}">Librarian Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('librarian_dashboard_stats') }}">Stats</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            </li>
+          </ul>
+        </div>
+       </nav>
+        <div class="col-md-8">
+          <a href="{{ url_for('requests') }}" class="btn btn-primary">Requests</a>
+        </div> 
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h3>Sections</h3>
+        </div>
+    </div>
+   </div>
+    <div class="row">
+        {% if sections %}
+            {% for section in sections %}
+                <div class="col-md-3 mb-3">
+                    <div class="card" onclick="location.href='{{ url_for('section_details', section_title=section.title) }}'">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ section.title }}</h5>
+                            <p class="card-text">
+                                Date Created: {{ section.date_created.strftime('%Y-%m-%d') }}<br>
+                                Description: {{ section.description }}
+                            </p>
+                            <a href="{{ url_for('add_book_to_section', section_title=section.title) }}" class="btn btn-success">Add Book</a>
+                            <a href="{{ url_for('edit_section', section_title=section.title) }}" class="btn btn-primary">Edit</a>
+                            <a href="{{ url_for('delete_section', section_title=section.title) }}" class="btn btn-danger">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Add sections to view</p>
+        {% endif %}
+    </div>
+    <div class="text-center mt-5">
+        <a href="{{ url_for('add_section') }}" class="btn btn-primary">Add Section</a>
+    </div>
+</div>
+{% endblock %}

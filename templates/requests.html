@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% set current_section = 'requests' %}
+
+{% block title %} Requests {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{{ url_for('librarian_dashboard') }}">Librarian Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('librarian_dashboard_stats') }}">Stats</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            </li>
+          </ul>
+        </div>
+       </nav>
+    <h2>Requests</h2>
+     <div class="row">
+        {% if requests %}
+            {% for request in requests %}
+        {% if request.status !='completed' %}
+      {% set temp = request.id %}
+  <div class="card" style="width: 18rem;" onclick="openUserModal({{ request.id }})">
+    <div class="card-body">
+      <h5 class="card-title">{{ request.book.title }}</h5>
+      <h6 class="card-subtitle mb-2 text-muted">{{ request.book.author }}</h6>
+      <p class="card-text">{{ request.book.section.title }}</p>
+      <p class2 class="card-text">{{ request.date_requested }}</p>
+      <p class="card-text">{{ request.book.request_status }}</p>
+      <div class="btn-group" role="group" aria-label="Basic example">
+        {% if request.book.request_status == 'pending' %}
+          <form method="POST" action="{{ url_for('accept_request', request_id=request.id) }}">
+            <input type="hidden" name="request_id" value="{{ request.id }}">
+            <button type="submit" class="btn btn-success">Accept</button>
+          </form>
+          <form method="POST" action="{{ url_for('reject_request', request_id=request.id) }}">
+            <input type="hidden" name="request_id" value="{{ request.id }}">
+            <button type="submit" class="btn btn-danger">Reject</button>
+          </form>
+        {% elif request.status == 'accepted' %}
+          <form method="POST" action="{{ url_for('revoke_request', request_id=request.id) }}">
+            <input type="hidden" name="request_id" value="{{ request.id }}">
+            <button type="submit" class="btn btn-danger">Revoke</button>
+          </form>
+          {% endif %}
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endfor %}
+        {% else %}
+            <p>No requests found</p>
+        {% endif %}
+     </div>
+    </div>
+</div>
+
+    <!-- Modal dialog for user details -->
+    {% for request in requests %}
+      
+      {% if request.status=='pending' %}
+        <div class="modal fade" id="userModal{{ request.id }}" tabindex="-1" role="dialog" aria-labelledby="userModal{{ request.id }}" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="userModal{{ request.id }}">User Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Username:</strong> {{ request.user.username }}</p>
+                        <p><strong>Days Requested:</strong> {{ request.days_requested }}</p>
+                        <p><strong>Book Title:</strong> {{ request.book.title }}</p>
+                        <p><strong>Book Section:</strong> {{ request.book.section.title }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <form method="POST" action="{{ url_for('accept_request', request_id=request.id) }}">
+                            <input type="hidden" name="request_id" value="{{ request.id }}">
+                            <button type="submit" class="btn btn-success">Accept</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('reject_request', request_id=request.id) }}">
+                            <input type="hidden" name="request_id" value="{{ request.id }}">
+                            <button type="submit" class="btn btn-danger">Reject</button>
+                        </form>
+                       <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#bookModal{{ request.id }}">
+                       View Book
+                       </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+     {% endif %}
+ 
+ {% endfor %}
+
+
+   <!-- Modal dialog for book details -->
+{% for request in requests %}
+
+    {% if request.status == 'pending' %}
+      <div class="modal fade" id="bookModal{{ request.id }}" tabindex="-1" role="dialog" aria-labelledby="bookModal{{ request.id }}" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="bookModal{{ request.id }}">Book Details</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p><strong>Book ID:</strong> {{ request.book.id }}</p>
+              <p><strong>Title:</strong> {{ request.book.title }}</p>
+              <p><strong>Author:</strong> {{ request.book.author }}</p>
+              <p><strong>Content:</strong> {{ request.book.content }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+ 
+{% endfor %}
+
+
+
+<script>
+  
+  function openUserModal(id) {
+    var reqid = id
+    var userModal = new bootstrap.Modal(document.getElementById('userModal' + reqid));
+    userModal.show();
+  }
+</script>
+
+{% endblock %}

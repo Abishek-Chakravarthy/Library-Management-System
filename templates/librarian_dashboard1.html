@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% set current_section = 'librarian_dashboard' %}
+
+{% block title %} Librarian's Dashboard {% endblock %}
+
+{% block content %}
+    <h2>Librarian's Dashboard</h2>
+    <div class="row">
+        <div class="col-md-8">
+          <form method="get">
+            <div class="input-group">
+              <input type="text" class="form-control" id="search_query" name="search_query" placeholder="Search sections...">
+              <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+          </form>
+        </div>
+        <div class="col-md-4 text-right">
+          <a href="#" class="btn btn-secondary">Stats</a>
+          <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+        </div>
+        <div class="row">
+            <h3>Sections</h3>
+            {% if sections %}
+                {% for section in sections %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ section.title }}</h5>
+                                <p class="card-text">
+                                    Date Created: {{ section.date_created.strftime('%Y-%m-%d') }}<br>
+                                    Description: {{ section.description }}
+                                </p>
+                                <a href="#" class="btn btn-primary">Add Book</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Add sections to view</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="text-center mt-5">
+        <a href="{{ url_for('add_section') }}" class="btn btn-primary">Add Section</a>
+    </div>
+{% endblock %}
